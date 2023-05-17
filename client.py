@@ -1,7 +1,7 @@
 import socket
 import threading
 import tkinter as tk
-Host='192.168.124.15'
+Host='2001:da8:8007:4011:642c:fe94:df54:65c7'# change it to the server ip
 Port=1112
 def receive_msg(client_socket,chats):
     while True:
@@ -33,7 +33,8 @@ class chat():
             try:client_socket.close()
             except:pass
             try:
-                client_socket=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+                #client_socket=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+                client_socket=socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
                 client_socket.connect((Host,Port))
                 msg='Connected to %s:%d\n\n'%(Host,Port)
                 threading.Thread(target=receive_msg,args=(client_socket,self),daemon=True).start()

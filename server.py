@@ -3,7 +3,7 @@ import threading
 import time
 names={}
 clients=[]
-Host='192.168.124.15'
+Host='2001:da8:8007:4011:642c:fe94:df54:65c7'# change it to your own ip
 Port=1112
 def setname(message,addr):
     temp=message.split(' ')
@@ -29,7 +29,8 @@ def broadcast(client_socket,message):
         client.send(message.encode())
     client_socket.send((message[:22]+message[str(message).find(':\n')+1:]).encode())
 def startup():
-    server=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    #server=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    server=socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
     server.bind((Host,Port))
     server.listen(5)
     print('Server started on %s:%s at %s\n'%(Host,Port,time.strftime('%Y.%m.%d  %H:%M:%S',time.localtime(time.time()))))
