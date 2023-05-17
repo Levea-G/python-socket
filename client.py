@@ -30,7 +30,10 @@ class chat():
             self.msg.insert(self.msg.index('insert'),'')
         def reconnect():
             global client_socket
+            try:client_socket.close()
+            except:pass
             try:
+                client_socket=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
                 client_socket.connect((Host,Port))
                 msg='Connected to %s:%d\n\n'%(Host,Port)
                 threading.Thread(target=receive_msg,args=(client_socket,self),daemon=True).start()
@@ -58,5 +61,4 @@ class chat():
         self.main.bind('<Alt-KeyPress-Return>',enter)
         self.msg.focus();reconnect()
 if __name__=='__main__':
-    client_socket=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     chat().main.mainloop()
