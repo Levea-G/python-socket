@@ -21,9 +21,9 @@ class chat():
             self.record.config(state='disabled')
         def send(_=None):
             global client_socket
-            self.msg.delete(str(int(self.msg.index('insert')[0])-1)+'.end')
+            self.msg.delete('%d.end'%(int(self.msg.index('insert')[0])-1))
             message=self.msg.get('1.0','end')
-            if len(message)==0:return
+            if len(message)==0 or message=='\n':return
             client_socket.send(message.encode())
             self.msg.delete(0.0,'end')
         def enter(_=None):
