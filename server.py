@@ -6,14 +6,14 @@ clients=[]
 Host='192.168.124.15'
 Port=1112
 def setname(message,addr):
-    temp=message.strip().split(' ')
-    if temp[0]=='setname':names[addr]=temp[1]
+    temp=message.split(' ')
+    if temp[0]=='setname':names[addr]=temp[1].strip()
     return message
 def handle_client(client_socket,addr):
     while True:
         try:
             message=setname(client_socket.recv(1024).decode(),addr)
-            fullmsg='%s %s:\n%s\n'%(time.strftime('[%Y.%m.%d  %H:%M:%S]',time.localtime(time.time())),names[addr],message)
+            fullmsg='%s %s:\n%s'%(time.strftime('[%Y.%m.%d  %H:%M:%S]',time.localtime(time.time())),names[addr],message)
             print(fullmsg)
             broadcast(client_socket,fullmsg)
         except:break

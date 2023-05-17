@@ -5,40 +5,36 @@ Host='192.168.124.15'
 Port=1112
 def receive_msg(client_socket,chats):
     while True:
-        try:
-            message=client_socket.recv(1024).decode()
-            chats.record.config(state='normal')
-            chats.record.insert('end',message+'\n')
-            chats.record.see('end')
-            chats.record.config(state='disabled')
+        try:message=client_socket.recv(1024).decode()
         except:
-            chats.record.config(state='normal')
-            chats.record.insert('end','Disconnected from server\n')
-            chats.record.see('end')
-            chats.record.config(state='disabled')
+            message='Disconnected from server'
             break
+        chats.record.config(state='normal')
+        chats.record.insert('end',message+'\n')
+        chats.record.see('end')
+        chats.record.config(state='disabled')
 class chat():
     def __init__(self):
         def clear():
             self.record.config(state='normal')
             self.record.delete(0.0,'end')
             self.record.config(state='disabled')
-        def send(event=None):
+        def send(_=None):
             global client_socket
-            message=self.msg.get('1.0','end').strip()
+            self.msg.delete(str(int(self.msg.index('insert')[0])-1)+'.end')
+            message=self.msg.get('1.0','end')
             if len(message)==0:return
             client_socket.send(message.encode())
             self.msg.delete(0.0,'end')
-        def enter(event=None):
+        def enter(_=None):
             self.msg.insert(self.msg.index('insert'),'')
         def reconnect():
             global client_socket
-            msg=''
             try:
                 client_socket.connect((Host,Port))
                 msg='Connected to %s:%d\n\n'%(Host,Port)
                 threading.Thread(target=receive_msg,args=(client_socket,self),daemon=True).start()
-            except:msg='Reconnect to %s:%d failed\n\n'%(Host,Port)
+            except:msg='Failed connecting to %s:%d\n\n'%(Host,Port)
             self.record.config(state='normal')
             self.record.insert('end',msg)
             self.record.see('end')
