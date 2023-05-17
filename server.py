@@ -13,7 +13,7 @@ def handle_client(client_socket,addr):
     while True:
         try:
             message=setname(client_socket.recv(1024).decode(),addr)
-            fullmsg='%s %s : %s'%(time.strftime('[%Y.%m.%d  %H:%M:%S]',time.localtime(time.time())),names[addr],message)
+            fullmsg='%s %s:\n%s\n'%(time.strftime('[%Y.%m.%d  %H:%M:%S]',time.localtime(time.time())),names[addr],message)
             print(fullmsg)
             broadcast(client_socket,fullmsg)
         except:break
@@ -27,7 +27,7 @@ def broadcast(client_socket,message):
     others.remove(client_socket)
     for client in others:
         client.send(message.encode())
-    client_socket.send((message[:23]+message[str(message).find(' : ')+3:]).encode())
+    client_socket.send((message[:22]+message[str(message).find(':\n')+1:]).encode())
 def startup():
     server=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     server.bind((Host,Port))
