@@ -3,7 +3,7 @@ import threading
 import time
 names={}
 clients=[]
-Host=''# change it to your own ip
+Host='2001:da8:8007:4011:642c:fe94:df54:65c7'# change it to your own ip
 Port=1112
 def setname(message,addr):
     temp=message.split(' ')
@@ -43,4 +43,3 @@ def startup():
         threading.Thread(target=handle_client,args=(client_socket,addr),daemon=True).start()
 if __name__=='__main__':
     startup()
-#192.168.124.15:1112

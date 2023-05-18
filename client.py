@@ -1,7 +1,7 @@
 import socket
 import threading
 import tkinter as tk
-Host=''# change it to the server ip
+Host='2001:da8:8007:4011:642c:fe94:df54:65c7'# change it to the server ip
 Port=1112
 def receive_msg(client_socket,chats):
     while True:
@@ -24,8 +24,13 @@ class chat():
             self.msg.delete('%d.end'%(int(self.msg.index('insert')[0])-1))
             message=self.msg.get('1.0','end')
             if len(message)==0 or message=='\n':return
-            client_socket.send(message.encode())
-            self.msg.delete(0.0,'end')
+            try:
+                client_socket.send(message.encode())
+                self.msg.delete(0.0,'end')
+            except:
+                self.record.config(state='normal')
+                self.record.delete(0.0,'end')
+                self.record.config(state='disabled')
         def enter(_=None):
             self.msg.insert(self.msg.index('insert'),'')
         def reconnect():
@@ -35,6 +40,7 @@ class chat():
             try:
                 #client_socket=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
                 client_socket=socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
+                client_socket.settimeout(2)
                 client_socket.connect((Host,Port))
                 msg='Connected to %s:%d\n\n'%(Host,Port)
                 threading.Thread(target=receive_msg,args=(client_socket,self),daemon=True).start()
