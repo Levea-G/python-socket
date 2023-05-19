@@ -1,23 +1,13 @@
 import socket
 import threading
 import tkinter as tk
-Host=''# change it to the server ip
+Host='2001:da8:8007:4011:642c:fe94:df54:65c7'# change it to the server ip
 Port=1112
-def receive_msg(client_socket,chats):
-    while True:
-        try:message=client_socket.recv(1024).decode()
-        except:
-            message='Disconnected from server'
-            break
-        chats.record.config(state='normal')
-        chats.record.insert('end',message+'\n')
-        chats.record.see('end')
-        chats.record.config(state='disabled')
 class chat():
     def __init__(self):
         def clear():
             self.record.config(state='normal')
-            self.record.delete(0.0,'end')
+            self.record.delete('1.0','end')
             self.record.config(state='disabled')
         def send(_=None):
             global client_socket
@@ -27,10 +17,7 @@ class chat():
             try:
                 client_socket.send(message.encode())
                 self.msg.delete(0.0,'end')
-            except:
-                self.record.config(state='normal')
-                self.record.delete(0.0,'end')
-                self.record.config(state='disabled')
+            except:pass
         def enter(_=None):
             self.msg.insert(self.msg.index('insert'),'')
         def reconnect():
@@ -42,13 +29,23 @@ class chat():
                 client_socket=socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
                 client_socket.settimeout(2)
                 client_socket.connect((Host,Port))
+                client_socket.settimeout(None)
                 msg='Connected to %s:%d\n\n'%(Host,Port)
-                threading.Thread(target=receive_msg,args=(client_socket,self),daemon=True).start()
+                threading.Thread(target=receive_msg,daemon=True).start()
             except:msg='Failed connecting to %s:%d\n\n'%(Host,Port)
             self.record.config(state='normal')
             self.record.insert('end',msg)
             self.record.see('end')
             self.record.config(state='disabled')
+        def receive_msg():
+            global client_socket
+            while True:
+                try:message=client_socket.recv(1024).decode()+'\n'
+                except:break
+                self.record.config(state='normal')
+                self.record.insert('end',message)
+                self.record.see('end')
+                self.record.config(state='disabled')
         self.main=tk.Tk()
         self.main.title('chatroom')
         self.main.geometry('640x480+300+200')
