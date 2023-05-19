@@ -31,13 +31,13 @@ class chat():
                 client_socket.connect((Host,Port))
                 client_socket.settimeout(None)
                 msg='Connected to %s:%d\n\n'%(Host,Port)
-                threading.Thread(target=receive_msg,daemon=True).start()
+                threading.Thread(target=receive,daemon=True).start()
             except:msg='Failed connecting to %s:%d\n\n'%(Host,Port)
             self.record.config(state='normal')
             self.record.insert('end',msg)
             self.record.see('end')
             self.record.config(state='disabled')
-        def receive_msg():
+        def receive():
             global client_socket
             while True:
                 try:message=client_socket.recv(1024).decode()+'\n'
