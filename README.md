@@ -5,3 +5,7 @@ before running the file, you need to complete the 'Host' param, the server end r
 now we have name changing func! use /setname \[new name] to set your shown name to \[new name]
 
 now we have private chats! use /tell \[name] \[message] to send \[message] to \[name]
+
+now we have checkup func! use /member to checkup who's in the room
+
+now we have file messages! yet we still have some problems with it, with an unstable connection, the program may throw an error
