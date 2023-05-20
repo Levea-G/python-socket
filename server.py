@@ -5,7 +5,7 @@ import re
 import os
 names={}
 clients={}
-Host='2001:da8:8007:4011:642c:fe94:df54:65c7'# change it to your own ip
+Host=''# change it to your own ip
 Port=1112
 lock=threading.Lock()
 def getprest():
