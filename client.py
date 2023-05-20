@@ -3,7 +3,7 @@ import threading
 import tkinter as tk
 from tkinter import filedialog
 import os
-Host='2001:da8:8007:4011:642c:fe94:df54:65c7'# change it to the server ip
+Host=''# change it to the server ip
 Port=1112
 class chat():
     def __init__(self):
