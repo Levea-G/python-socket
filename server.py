@@ -2,18 +2,36 @@ import socket
 import threading
 import time
 import re
+import os
 names={}
 clients={}
-Host=''# change it to your own ip
+Host='2001:da8:8007:4011:642c:fe94:df54:65c7'# change it to your own ip
 Port=1112
+lock=threading.Lock()
+def getprest():
+    return time.strftime('[%Y.%m.%d  %H:%M:%S]',time.localtime(time.time()))
+def acceptfile():
+    lock.acquire()
+    client_file,addr=file_socket.accept();addr=addr[0]
+    fname,times=client_file.recv(1024).decode().split('\x00')
+    client_file.send('received'.encode())
+    xx=os.open('temp/%s.temp'%fname,os.O_BINARY|os.O_WRONLY|os.O_CREAT)
+    for _ in range(int(times)):
+        os.write(xx,client_file.recv(8192))
+    os.close(xx)
+    try:os.remove('files/%s'%fname)
+    except:pass
+    os.rename('temp/%s.temp'%fname,'files/%s'%fname)
+    broadcast(clients[names[addr]],'%s %s:\nuploaded file %s\n'%(getprest(),names[addr],fname))
+    lock.release()
 def handle_client(client_socket,addr):
     name=names[addr]
     while True:
         try:
-            message,tstamp=client_socket.recv(1024).decode(),time.strftime('[%Y.%m.%d  %H:%M:%S]',time.localtime(time.time()))
+            message,tstamp=client_socket.recv(1024).decode(),getprest()
             fullmsg='%s %s:\n%s'%(tstamp,name,message)
             print(fullmsg)
-            temp=re.findall(re.compile('^/([a-zA-Z]+)[ ]+([^ \n]+)[ ]*(.*)$',re.DOTALL),message)
+            temp=re.findall(re.compile('^/([a-zA-Z]+)[ ]*([^ \n]*)[ ]*(.*)$',re.DOTALL),message)
             try:
                 temp=temp[0]
                 if temp[0]=='setname':
@@ -24,20 +42,23 @@ def handle_client(client_socket,addr):
                     else:
                         broadcast(client_socket,'%s %s:\nsetname -> %s\n'%(tstamp,name,temp[1]))
                         clients[temp[1]]=clients.pop(name)
-                        name=temp[1]
+                        names[addr]=name=temp[1]
                 elif temp[0]=='tell':
                     if len(temp[1])>20 or temp[1] not in clients.keys():
                         client_socket.send(('%s\nServer: name %s doesn\'t exist\n'%(tstamp,temp[1])).encode())
                     else:
                         clients[temp[1]].send(('%s(SILENT) %s ->\n%s'%(tstamp,name,temp[2])).encode())
                         client_socket.send(('%s(SILENT) -> %s\n%s'%(tstamp,temp[1],temp[2])).encode())
+                elif temp[0]=='member':
+                    client_socket.send((tstamp+'\n'+'\n'.join(names.values())+'\n').encode())
+                elif temp[0]=='Chris' and temp[1]=='\x00':
+                    threading.Thread(target=acceptfile,daemon=True).start()
                 else:exit(0)
             except:broadcast(client_socket,fullmsg)
         except:break
     try:
         clients.pop(name)
-        names[addr]=name
-        print('Client disconnected: %s\n'%names[addr])
+        print('%s\nClient disconnected: %s\n'%(getprest(),names[addr]))
     except:pass
     client_socket.close()
 def broadcast(client_socket,message):
@@ -45,19 +66,25 @@ def broadcast(client_socket,message):
     others.remove(client_socket)
     for client in others:
         client.send(message.encode())
-    client_socket.send((message[:22]+message[message.find(':\n')+1:]).encode())
+    if client_socket:client_socket.send((message[:22]+message[message.find(':\n')+1:]).encode())
 def startup():
-    #server=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    try:os.mkdir('temp')
+    except:pass
+    try:os.mkdir('files')
+    except:pass
     server=socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
     server.bind((Host,Port))
     server.listen(5)
-    print('Server started on %s:%s at %s\n'%(Host,Port,time.strftime('%Y.%m.%d  %H:%M:%S',time.localtime(time.time()))))
+    print('%s\nServer started on %s:%s\n'%(getprest(),Host,Port))
+    global file_socket
+    file_socket=socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
+    file_socket.bind((Host,Port+1))
+    file_socket.listen(5)
     while True:
-        client_socket,addr=server.accept()
-        addr=addr[0]
+        client_socket,addr=server.accept();addr=addr[0]
         if addr not in names.keys():names[addr]=addr
         clients[names[addr]]=client_socket
-        print('Client connected: %s\n'%names[addr])
+        print('%sClient connected: %s\n'%(getprest(),names[addr]))
         threading.Thread(target=handle_client,args=(client_socket,addr),daemon=True).start()
 if __name__=='__main__':
     startup()
