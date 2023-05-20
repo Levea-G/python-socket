@@ -8,4 +8,4 @@ now we have private chats! use /tell \[name] \[message] to send \[message] to \[
 
 now we have checkup func! use /member to checkup who's in the room
 
-now we have file messages! yet we still have some problems with it, with an unstable connection, the program may throw an error
+now we have file messages! yet we still have some problems with it, now we can only upload files onto the server
