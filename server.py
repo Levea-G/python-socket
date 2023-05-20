@@ -13,11 +13,13 @@ def getprest():
 def acceptfile():
     lock.acquire()
     client_file,addr=file_socket.accept();addr=addr[0]
-    fname,times=client_file.recv(1024).decode().split('\x00')
+    fname,size=client_file.recv(1024).decode().split('\x00');size=int(size)
     client_file.send('received'.encode())
     xx=os.open('temp/%s.temp'%fname,os.O_BINARY|os.O_WRONLY|os.O_CREAT)
-    for _ in range(int(times)):
-        os.write(xx,client_file.recv(8192))
+    client_file.settimeout(10)
+    while os.lseek(xx,0,1)!=size:
+        try:os.write(xx,client_file.recv(8192))
+        except:return
     os.close(xx)
     try:os.remove('files/%s'%fname)
     except:pass

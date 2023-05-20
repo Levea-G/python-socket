@@ -31,15 +31,20 @@ class chat():
                 try:message=server_socket.recv(1024).decode()+'\n'
                 except:break
                 addrecord(message)
-        def _sf(path,times):
+        def _sf(path,size):
             file_socket=socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
             try:file_socket.connect((Host,Port+1))
             except:return
-            file_socket.send(('%s\x00%d'%(path.split('/')[-1],times)).encode())
+            file_socket.send(('%s\x00%d'%(path.split('/')[-1],size)).encode())
             file_socket.recv(10)
             xx=os.open(path,os.O_BINARY|os.O_RDONLY)
-            for _ in range(times):
-                file_socket.send(os.read(xx,8192))
+            for _ in range(size//8192+1):
+                while True:
+                    temp=os.lseek(xx,0,1)
+                    try:
+                        file_socket.send(os.read(xx,8192))
+                        break
+                    except:os.lseek(xx,temp,0)
             os.close(xx)
             file_socket.close()
         def sendfile():
@@ -47,14 +52,14 @@ class chat():
             try:server_socket.getpeername()
             except:return
             for path in filedialog.askopenfilenames():
-                times=os.path.getsize(path)//8192+1
-                if times>131072:
-                    addrecord('file too big(>1G)!\n\n')
+                size=os.path.getsize(path)
+                if size<209715200:
+                    addrecord('file too big(>200M)!\n\n')
                 elif len(path.split('/')[-1])>200:
                     addrecord('file name too long(>200)!\n\n')
                 else:
                     server_socket.send('/Chris \x00 \n'.encode())
-                    threading.Thread(target=_sf,args=(path,times),daemon=True).start()
+                    threading.Thread(target=_sf,args=(path,size),daemon=True).start()
         def enter(_=None):
             self.msg.insert(self.msg.index('insert'),'')
         def reconnect():
