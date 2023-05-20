@@ -5,6 +5,7 @@ from tkinter import filedialog
 import os
 Host=''# change it to the server ip
 Port=1112
+r_lock=threading.Lock()
 class chat():
     def __init__(self):
         def addrecord(message):
@@ -17,7 +18,6 @@ class chat():
             self.record.delete('1.0','end')
             self.record.config(state='disabled')
         def send(_=None):
-            global server_socket
             self.msg.delete('%d.end'%(int(self.msg.index('insert')[0])-1))
             message=self.msg.get('1.0','end')
             if len(message)==0 or message=='\n':return
@@ -26,7 +26,6 @@ class chat():
                 self.msg.delete(0.0,'end')
             except:pass
         def receive():
-            global server_socket
             while True:
                 try:message=server_socket.recv(1024).decode()+'\n'
                 except:break
@@ -47,19 +46,70 @@ class chat():
                     except:os.lseek(xx,temp,0)
             os.close(xx)
             file_socket.close()
-        def sendfile():
-            global server_socket
+        def send_file():
             try:server_socket.getpeername()
             except:return
             for path in filedialog.askopenfilenames():
                 size=os.path.getsize(path)
-                if size<209715200:
+                if size>209715200:
                     addrecord('file too big(>200M)!\n\n')
                 elif len(path.split('/')[-1])>200:
                     addrecord('file name too long(>200)!\n\n')
                 else:
                     server_socket.send('/Chris \x00 \n'.encode())
                     threading.Thread(target=_sf,args=(path,size),daemon=True).start()
+        def get_file():
+            try:server_socket.getpeername()
+            except:return
+            def refresh():
+                server_socket.send('/Chris \x01 \n'.encode())
+                file_socket=socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
+                file_socket.connect((Host,Port+2))
+                fnames=file_socket.recv(1024).decode().split('\x00')
+                file_socket.close()
+                nms.delete(0,'end')
+                for item in fnames:nms.insert('end',item)
+            def _gf(path,fname):
+                try:xx=os.open(path,os.O_BINARY|os.O_WRONLY|os.O_CREAT)
+                except:return
+                r_lock.acquire()
+                file_socket=socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
+                file_socket.connect((Host,Port+3))
+                file_socket.send(fname.encode())
+                size=int(file_socket.recv(1024).decode())
+                file_socket.send('confirmed'.encode())
+                file_socket.settimeout(10)
+                while os.lseek(xx,0,1)!=size:
+                    try:os.write(xx,file_socket.recv(8192))
+                    except:
+                        os.close(xx)
+                        file_socket.close()
+                        r_lock.release()
+                        return
+                os.close(xx)
+                file_socket.close()
+                r_lock.release()
+            def getfile():
+                fname=nms.get('active')
+                path=filedialog.asksaveasfilename(initialfile=fname)
+                server_socket.send('/Chris \x02 \n'.encode())
+                threading.Thread(target=_gf,args=(path,fname),daemon=True).start()
+                checklist.focus()
+            checklist=tk.Toplevel()
+            checklist.title('file list')
+            checklist.geometry('640x480+350+250')
+            checklist.resizable(0,0)
+            nms=tk.Listbox(checklist)
+            nms.place(relx=0,rely=0,relwidth=1,relheight=0.8)
+            scy=tk.Scrollbar(nms,command=nms.yview)
+            scx=tk.Scrollbar(nms,command=nms.xview,orient='horizontal')
+            scy.pack(side='right',fill='y')
+            scx.pack(side='bottom',fill='x')
+            nms.config(yscrollcommand=scy.set,xscrollcommand=scx.set)
+            tk.Button(checklist,font=('times',12),text='get',command=getfile).place(relx=0.3,rely=0.85,relwidth=0.1,relheight=0.05)
+            tk.Button(checklist,font=('times',12),text='refresh',command=refresh).place(relx=0.6,rely=0.85,relwidth=0.1,relheight=0.05)
+            refresh()
+            checklist.transient()
         def enter(_=None):
             self.msg.insert(self.msg.index('insert'),'')
         def reconnect():
@@ -88,9 +138,10 @@ class chat():
         sc2=tk.Scrollbar(self.msg,command=self.msg.yview)
         sc2.pack(side='right',fill='y',in_=self.msg,expand=0)
         self.msg.config(yscrollcommand=sc2.set)
-        tk.Button(self.main,font=('times',12),text='clear\nrecord',command=clear).place(relx=0.05,rely=0.2,relwidth=0.12,relheight=0.1)
-        tk.Button(self.main,font=('times',12),text='send\nfile',command=sendfile).place(relx=0.05,rely=0.4,relwidth=0.1,relheight=0.1)
-        tk.Button(self.main,font=('times',12),text='reconnect',command=reconnect).place(relx=0.05,rely=0.6,relwidth=0.1,relheight=0.1)
+        tk.Button(self.main,font=('times',12),text='clear\nrecord',command=clear).place(relx=0.05,rely=0.12,relwidth=0.1,relheight=0.1)
+        tk.Button(self.main,font=('times',12),text='send\nfile',command=send_file).place(relx=0.05,rely=0.34,relwidth=0.1,relheight=0.1)
+        tk.Button(self.main,font=('times',12),text='get\nfile',command=get_file).place(relx=0.05,rely=0.56,relwidth=0.1,relheight=0.1)
+        tk.Button(self.main,font=('times',12),text='reconnect',command=reconnect).place(relx=0.05,rely=0.78,relwidth=0.1,relheight=0.1)
         self.main.bind('<Return>',send)
         self.main.bind('<Alt-KeyPress-Return>',enter)
         self.msg.focus();reconnect()
