@@ -63,21 +63,22 @@ def handle_client(client_socket,addr):
                 temp=temp[0]
                 if temp[0]=='setname':
                     if len(temp[1])>20:
-                        client_socket.send(('%s\nServer: name %s is too long(>20)!\n'%(tstamp,temp[1])).encode())
+                        client_socket.send(('p%s\nServer: name %s is too long(>20)!\n'%(tstamp,temp[1])).encode())
                     elif temp[1] in clients.keys():
-                        client_socket.send(('%s\nServer: name %s already exists\n'%(tstamp,temp[1])).encode())
+                        client_socket.send(('p%s\nServer: name %s already exists\n'%(tstamp,temp[1])).encode())
                     else:
                         broadcast(client_socket,'%s %s:\nsetname -> %s\n'%(tstamp,name,temp[1]))
                         clients[temp[1]]=clients.pop(name)
-                        names[addr]=name=temp[1]
+                        names[addr]=temp[1]
+                        name=temp[1]
                 elif temp[0]=='tell':
                     if len(temp[1])>20 or temp[1] not in clients.keys():
-                        client_socket.send(('%s\nServer: name %s doesn\'t exist\n'%(tstamp,temp[1])).encode())
+                        client_socket.send(('p%s\nServer: name %s doesn\'t exist\n'%(tstamp,temp[1])).encode())
                     else:
-                        clients[temp[1]].send(('%s(SILENT) %s ->\n%s'%(tstamp,name,temp[2])).encode())
-                        client_socket.send(('%s(SILENT) -> %s\n%s'%(tstamp,temp[1],temp[2])).encode())
+                        clients[temp[1]].send(('g%s(SILENT) %s ->\n%s'%(tstamp,name,temp[2])).encode())
+                        client_socket.send(('g%s(SILENT) -> %s\n%s'%(tstamp,temp[1],temp[2])).encode())
                 elif temp[0]=='member':
-                    client_socket.send((tstamp+'\n'+'\n'.join(names.values())+'\n').encode())
+                    client_socket.send(('p%s\n%s\n'%(tstamp,'\n'.join(names.values()))).encode())
                 elif temp[0]=='Chris' and temp[1]=='\x00':
                     threading.Thread(target=acceptfile,daemon=True).start()
                 elif temp[0]=='Chris' and temp[1]=='\x01':
@@ -90,9 +91,9 @@ def handle_client(client_socket,addr):
     try:
         clients.pop(name)
         print('%s\nClient disconnected: %s\n'%(getprest(),names[addr]))
+        broadcast(client_socket,'%s\nClient disconnected: %s\n'%(getprest(),names[addr]))
     except:pass
     client_socket.close()
-    broadcast(None,'%s\nClient disconnected: %s\n'%(getprest(),names[addr]))
 def broadcast(client_socket,message):
     others=list(clients.values())
     try:others.remove(client_socket)

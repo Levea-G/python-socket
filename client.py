@@ -34,6 +34,7 @@ class chat():
                 if message!='\x00':
                     if message[0]=='m':addrecord(message[1:]+'\n','me')
                     elif message[0]=='p':addrecord(message[1:]+'\n','private')
+                    elif message[0]=='g':addrecord(message[1:]+'\n','silent')
                     else:addrecord(message+'\n','others')
                 msg_lock.release()
         def _sf(path,size):
@@ -148,19 +149,24 @@ class chat():
         self.record.tag_config('others',foreground='black')
         self.record.tag_add('private','0.0')
         self.record.tag_config('private',foreground='purple')
+        self.record.tag_add('silent','0.0')
+        self.record.tag_config('silent',foreground='grey')
         #
         sc1=tk.Scrollbar(self.record,command=self.record.yview)
         sc1.pack(side='right',fill='y')
         self.record.config(yscrollcommand=sc1.set)
+        #
         self.msg=tk.Text(self.main,font=('times',14),wrap='word')
         self.msg.place(relx=0.2,rely=0.8,relwidth=0.8,relheight=0.2)
         sc2=tk.Scrollbar(self.msg,command=self.msg.yview)
         sc2.pack(side='right',fill='y',in_=self.msg,expand=0)
         self.msg.config(yscrollcommand=sc2.set)
+        #
         tk.Button(self.main,font=('times',12),text='clear\nrecord',command=clear).place(relx=0.05,rely=0.12,relwidth=0.1,relheight=0.1)
         tk.Button(self.main,font=('times',12),text='send\nfile',command=send_file).place(relx=0.05,rely=0.34,relwidth=0.1,relheight=0.1)
         tk.Button(self.main,font=('times',12),text='get\nfile',command=get_file).place(relx=0.05,rely=0.56,relwidth=0.1,relheight=0.1)
         tk.Button(self.main,font=('times',12),text='reconnect',command=reconnect).place(relx=0.05,rely=0.78,relwidth=0.1,relheight=0.1)
+        #
         self.main.bind('<Return>',send)
         self.main.bind('<Alt-KeyPress-Return>',enter)
         self.msg.focus();reconnect()
