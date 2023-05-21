@@ -10,6 +10,10 @@ def acceptfile():
     r_lock.acquire()
     client_file,addr=file_socket.accept();addr=addr[0]
     fname,size=client_file.recv(1024).decode().split('\x00');size=int(size)
+    if size>209715200:
+        client_file.send('rejected'.encode())
+        r_lock.release()
+        return
     client_file.send('confirmed'.encode())
     xx=os.open('temp/%s.temp'%fname,os.O_BINARY|os.O_WRONLY|os.O_CREAT)
     client_file.settimeout(10)

@@ -35,7 +35,11 @@ class chat():
             try:file_socket.connect((Host,Port+1))
             except:return
             file_socket.send(('%s\x00%d'%(path.split('/')[-1],size)).encode())
-            file_socket.recv(10)
+            reply=file_socket.recv(10).decode()
+            if reply=='rejected':
+                addrecord('server rejected\n\n')
+                file_socket.close()
+                return
             xx=os.open(path,os.O_BINARY|os.O_RDONLY)
             for _ in range(size//8192+1):
                 while True:
@@ -56,13 +60,13 @@ class chat():
                 elif len(path.split('/')[-1])>200:
                     addrecord('file name too long(>200)!\n\n')
                 else:
-                    server_socket.send('/Chris \x00 \n'.encode())
+                    server_socket.send(('/Chris \x00 upload %s\n'%path.split('/')[-1]).encode())
                     threading.Thread(target=_sf,args=(path,size),daemon=True).start()
         def get_file():
             try:server_socket.getpeername()
             except:return
             def refresh():
-                server_socket.send('/Chris \x01 \n'.encode())
+                server_socket.send('/Chris \x01 asknames\n'.encode())
                 file_socket=socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
                 file_socket.connect((Host,Port+2))
                 fnames=file_socket.recv(1024).decode().split('\x00')
@@ -92,7 +96,7 @@ class chat():
             def getfile():
                 fname=nms.get('active')
                 path=filedialog.asksaveasfilename(initialfile=fname)
-                server_socket.send('/Chris \x02 \n'.encode())
+                server_socket.send(('/Chris \x02 download %s\n'%fname).encode())
                 threading.Thread(target=_gf,args=(path,fname),daemon=True).start()
                 checklist.focus()
             checklist=tk.Toplevel()
