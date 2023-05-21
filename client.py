@@ -9,9 +9,9 @@ r_lock=threading.Lock()
 msg_lock=threading.Lock()
 class chat():
     def __init__(self):
-        def addrecord(message):
+        def addrecord(message,typen):
             self.record.config(state='normal')
-            self.record.insert('end',message)
+            self.record.insert('end',message,typen)
             if sc1.get()[1]==1:self.record.see('end')
             self.record.config(state='disabled')
         def clear():
@@ -31,7 +31,10 @@ class chat():
                 try:message=server_socket.recv(1024).decode()
                 except:break
                 msg_lock.acquire()
-                if message!='\x00':addrecord(message+'\n')
+                if message!='\x00':
+                    if message[0]=='m':addrecord(message[1:]+'\n','me')
+                    elif message[0]=='p':addrecord(message[1:]+'\n','private')
+                    else:addrecord(message+'\n','others')
                 msg_lock.release()
         def _sf(path,size):
             file_socket=socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
@@ -40,7 +43,7 @@ class chat():
             file_socket.send(('%s\x00%d'%(path.split('/')[-1],size)).encode())
             reply=file_socket.recv(10).decode()
             if reply=='rejected':
-                addrecord('server rejected\n\n')
+                addrecord('server rejected\n\n','me')
                 file_socket.close()
                 return
             xx=os.open(path,os.O_BINARY|os.O_RDONLY)
@@ -59,9 +62,9 @@ class chat():
             for path in filedialog.askopenfilenames():
                 size=os.path.getsize(path)
                 if size>209715200:
-                    addrecord('file too big(>200M)!\n\n')
+                    addrecord('file too big(>200M)!\n\n','private')
                 elif len(path.split('/')[-1])>200:
-                    addrecord('file name too long(>200)!\n\n')
+                    addrecord('file name too long(>200)!\n\n','private')
                 else:
                     msg_lock.acquire()
                     server_socket.send(('/Chris \x00 upload %s\n'%path.split('/')[-1]).encode())
@@ -131,15 +134,21 @@ class chat():
                 server_socket.settimeout(2)
                 server_socket.connect((Host,Port))
                 server_socket.settimeout(None)
-                msg='Connected to %s:%d\n\n'%(Host,Port)
                 threading.Thread(target=receive,daemon=True).start()
-            except:msg='Failed connecting to %s:%d\n\n'%(Host,Port)
-            addrecord(msg)
+            except:addrecord('Failed connecting to %s:%d\n\n'%(Host,Port),'private')
         self.main=tk.Tk()
         self.main.title('chatroom')
         self.main.geometry('640x480+300+200')
         self.record=tk.Text(self.main,font=('times',14),state='disable',wrap='word')
         self.record.place(relx=0.2,rely=0,relwidth=0.8,relheight=0.8)
+        #
+        self.record.tag_add('me','0.0')
+        self.record.tag_config('me',foreground='blue')
+        self.record.tag_add('others','0.0')
+        self.record.tag_config('others',foreground='black')
+        self.record.tag_add('private','0.0')
+        self.record.tag_config('private',foreground='purple')
+        #
         sc1=tk.Scrollbar(self.record,command=self.record.yview)
         sc1.pack(side='right',fill='y')
         self.record.config(yscrollcommand=sc1.set)

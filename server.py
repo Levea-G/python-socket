@@ -27,7 +27,7 @@ def acceptfile():
     try:os.remove('files/%s'%fname)
     except:pass
     os.rename('temp/%s.temp'%fname,'files/%s'%fname)
-    broadcast(clients[names[addr]],'%s %s:\nuploaded file %s\n'%(getprest(),names[addr],fname))
+    broadcast(client_file,'%s %s:\nfile %s uploaded\n'%(getprest(),names[addr],fname))
     r_lock.release()
 def sendnames():
     client_file,_=name_socket.accept()
@@ -47,10 +47,11 @@ def sendfile():
                 break
             except:os.lseek(xx,temp,0)
     os.close(xx)
-    clients[names[addr]].send(('file %s downloaded\n'%fname).encode())
+    clients[names[addr]].send(('p%s\nfile %s downloaded\n'%(getprest(),fname)).encode())
 def handle_client(client_socket,addr):
     name=names[addr]
     print('%s\nClient connected: %s\n'%(getprest(),name))
+    broadcast(client_socket,'%s\nClient connected: %s\n'%(getprest(),name))
     while True:
         try:
             message,tstamp=client_socket.recv(1024).decode(),getprest()
@@ -91,12 +92,15 @@ def handle_client(client_socket,addr):
         print('%s\nClient disconnected: %s\n'%(getprest(),names[addr]))
     except:pass
     client_socket.close()
+    broadcast(None,'%s\nClient disconnected: %s\n'%(getprest(),names[addr]))
 def broadcast(client_socket,message):
     others=list(clients.values())
-    others.remove(client_socket)
+    try:others.remove(client_socket)
+    except:pass
     for client in others:
         client.send(message.encode())
-    if client_socket:client_socket.send((message[:22]+message[message.find(':\n')+1:]).encode())
+    try:client_socket.send(('m'+message).encode())
+    except:pass
 def startup():
     try:os.mkdir('temp')
     except:pass
