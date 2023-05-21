@@ -27,7 +27,7 @@ def acceptfile():
     try:os.remove('files/%s'%fname)
     except:pass
     os.rename('temp/%s.temp'%fname,'files/%s'%fname)
-    broadcast(client_file,'%s %s:\nfile %s uploaded\n'%(getprest(),names[addr],fname))
+    broadcast(clients[names[addr]],'%s %s:\nfile %s uploaded\n'%(getprest(),names[addr],fname))
     r_lock.release()
 def sendnames():
     client_file,_=name_socket.accept()
