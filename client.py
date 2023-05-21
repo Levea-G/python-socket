@@ -100,6 +100,7 @@ class chat():
                 r_lock.release()
             def getfile():
                 fname=nms.get('active')
+                if fname=='':return
                 path=filedialog.asksaveasfilename(initialfile=fname)
                 server_socket.send(('/Chris \x02 download %s\n'%fname).encode())
                 threading.Thread(target=_gf,args=(path,fname),daemon=True).start()
