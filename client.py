@@ -6,6 +6,7 @@ import os
 Host=''# change it to the server ip
 Port=1112
 r_lock=threading.Lock()
+msg_lock=threading.Lock()
 class chat():
     def __init__(self):
         def addrecord(message):
@@ -27,9 +28,11 @@ class chat():
             except:pass
         def receive():
             while True:
-                try:message=server_socket.recv(1024).decode()+'\n'
+                try:message=server_socket.recv(1024).decode()
                 except:break
-                addrecord(message)
+                msg_lock.acquire()
+                if message!='\x00':addrecord(message+'\n')
+                msg_lock.release()
         def _sf(path,size):
             file_socket=socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
             try:file_socket.connect((Host,Port+1))
@@ -60,7 +63,9 @@ class chat():
                 elif len(path.split('/')[-1])>200:
                     addrecord('file name too long(>200)!\n\n')
                 else:
+                    msg_lock.acquire()
                     server_socket.send(('/Chris \x00 upload %s\n'%path.split('/')[-1]).encode())
+                    msg_lock.release()
                     threading.Thread(target=_sf,args=(path,size),daemon=True).start()
         def get_file():
             try:server_socket.getpeername()

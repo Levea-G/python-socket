@@ -54,6 +54,7 @@ def handle_client(client_socket,addr):
     while True:
         try:
             message,tstamp=client_socket.recv(1024).decode(),getprest()
+            client_socket.send('\x00'.encode())
             fullmsg='%s %s:\n%s'%(tstamp,name,message)
             print(fullmsg)
             temp=re.findall(re.compile('^/([a-zA-Z]+)[ ]*([^ \n]*)[ ]*(.*)$',re.DOTALL),message)
