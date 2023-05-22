@@ -1,6 +1,6 @@
 # python-socket
 python socket practices  
-before running the file, you need to complete the 'hostname' param marked in the client.py, the server end will automatically get the local ip of which device that runs this file
+before running the file, you need to complete the 'Host' param marked in the client.py, the server end will automatically get the local ip of which device that runs this file
 
 now we have name changing func! use /setname \[new name] to set your shown name to \[new name]
 
