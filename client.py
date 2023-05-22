@@ -3,7 +3,7 @@ import threading
 import tkinter as tk
 from tkinter import filedialog
 import os
-Host=''#server ip
+Host=''
 Port=1112
 r_lock=threading.Lock()
 msg_lock=threading.Lock()
@@ -170,6 +170,24 @@ class chat():
         #
         self.main.bind('<Return>',send)
         self.main.bind('<Alt-KeyPress-Return>',enter)
-        self.msg.focus();reconnect()
+        reconnect();self.msg.focus()
+class askip():
+    def __init__(self):
+        def getip(_=None):
+            global Host
+            Host=get.get()
+            if Host=='':return
+            self.main.destroy()
+        self.main=tk.Tk()
+        self.main.title('ip confirm')
+        self.main.geometry('400x50+500+380')
+        self.main.resizable(0,0)
+        get=tk.Entry(self.main,font=('times',12))
+        get.place(x=10,y=10,width=320,height=30)
+        tk.Button(self.main,font=('times',12),text='confirm',command=getip).place(x=340,y=10,width=50,height=30)
+        self.main.bind('<Return>',getip)
+        get.focus()
 if __name__=='__main__':
+    askip().main.mainloop()
+    if Host=='':exit(0)
     chat().main.mainloop()
