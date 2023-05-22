@@ -1,7 +1,7 @@
 import socket,threading,time,re,os
 names={}
 clients={}
-Host=''# change it to your own ip
+Host=socket.getaddrinfo(socket.gethostname(),None,socket.AF_INET6)[2][4][0]# change it to your own ip
 Port=1112
 r_lock=threading.Lock()
 def getprest():
@@ -125,7 +125,7 @@ def startup():
     send_socket.listen(5)
     while True:
         client_socket,addr=server.accept();addr=addr[0]
-        if addr not in names.keys():names[addr]=addr
+        if addr not in names.keys():names[addr]='user%s'%hex(len(names))
         clients[names[addr]]=client_socket
         threading.Thread(target=handle_client,args=(client_socket,addr),daemon=True).start()
 if __name__=='__main__':

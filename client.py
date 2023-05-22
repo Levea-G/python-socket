@@ -3,7 +3,7 @@ import threading
 import tkinter as tk
 from tkinter import filedialog
 import os
-Host=''# change it to the server ip
+Host=''
 Port=1112
 r_lock=threading.Lock()
 msg_lock=threading.Lock()
@@ -133,12 +133,13 @@ class chat():
             try:server_socket.close()
             except:pass
             try:
+                Host=socket.getaddrinfo('LAPTOP-9TN7PQ92',None,socket.AF_INET6)[2][4][0]
                 server_socket=socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
                 server_socket.settimeout(2)
                 server_socket.connect((Host,Port))
                 server_socket.settimeout(None)
                 threading.Thread(target=receive,daemon=True).start()
-            except:addrecord('Failed connecting to %s:%d\n\n'%(Host,Port),'private')
+            except:addrecord('Failed to connect to server\n\n','private')
         self.main=tk.Tk()
         self.main.title('chatroom')
         self.main.geometry('640x480+300+200')
