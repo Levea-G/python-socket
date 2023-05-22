@@ -179,8 +179,9 @@ class askip():
             if Host=='':return
             self.main.destroy()
         self.main=tk.Tk()
-        self.main.title('ip confirm')
+        self.main.title('set target ip')
         self.main.geometry('400x50+500+380')
+        self.main.iconbitmap(True,'icon/ayii1-9st1x-001.ico')
         self.main.resizable(0,0)
         get=tk.Entry(self.main,font=('times',12))
         get.place(x=10,y=10,width=320,height=30)
@@ -189,5 +190,4 @@ class askip():
         get.focus()
 if __name__=='__main__':
     askip().main.mainloop()
-    if Host=='':exit(0)
-    chat().main.mainloop()
+    if Host!='':chat().main.mainloop()
