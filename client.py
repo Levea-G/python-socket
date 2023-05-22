@@ -3,7 +3,7 @@ import threading
 import tkinter as tk
 from tkinter import filedialog
 import os
-Host=''
+Host=''#server ip
 Port=1112
 r_lock=threading.Lock()
 msg_lock=threading.Lock()
@@ -133,7 +133,6 @@ class chat():
             try:server_socket.close()
             except:pass
             try:
-                Host=socket.getaddrinfo('',None,socket.AF_INET6)[2][4][0]#input hostname
                 server_socket=socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
                 server_socket.settimeout(2)
                 server_socket.connect((Host,Port))
