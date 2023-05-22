@@ -9,7 +9,3 @@ now we have private chats! use /tell \[name] \[message] to send \[message] to \[
 now we have checkup func! use /member to checkup who's in the room
 
 now we have file messages! there might still be some problems with it, you can contact me through 1499369897@qq.com or suspectx2019@gmail.com to inform me if you meet with any
-
-note that the exe file can only connect to my computer at school, which means it's only an example, and also an early version
-
-the reconnect func might still be buggy
