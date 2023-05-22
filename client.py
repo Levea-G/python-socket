@@ -144,6 +144,9 @@ class chat():
         self.main.geometry('640x480+300+200')
         self.record=tk.Text(self.main,font=('times',14),state='disable',wrap='word')
         self.record.place(relx=0.2,rely=0,relwidth=0.8,relheight=0.8)
+        sc1=tk.Scrollbar(self.record,command=self.record.yview)
+        sc1.pack(side='right',fill='y')
+        self.record.config(yscrollcommand=sc1.set)
         #
         self.record.tag_add('me','0.0')
         self.record.tag_config('me',foreground='blue')
@@ -153,10 +156,6 @@ class chat():
         self.record.tag_config('private',foreground='purple')
         self.record.tag_add('silent','0.0')
         self.record.tag_config('silent',foreground='grey')
-        #
-        sc1=tk.Scrollbar(self.record,command=self.record.yview)
-        sc1.pack(side='right',fill='y')
-        self.record.config(yscrollcommand=sc1.set)
         #
         self.msg=tk.Text(self.main,font=('times',14),wrap='word')
         self.msg.place(relx=0.2,rely=0.8,relwidth=0.8,relheight=0.2)

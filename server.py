@@ -50,7 +50,7 @@ def sendfile():
     clients[names[addr]].send(('p%s\nfile %s downloaded\n'%(getprest(),fname)).encode())
 def handle_client(client_socket,addr):
     name=names[addr]
-    print('%s\nClient connected: %s\n'%(getprest(),name))
+    print('%s\nClient connected: %s\n\n'%(getprest(),name))
     broadcast(client_socket,'%s\nClient connected: %s\n'%(getprest(),name))
     while True:
         try:
@@ -63,9 +63,9 @@ def handle_client(client_socket,addr):
                 temp=temp[0]
                 if temp[0]=='setname':
                     if len(temp[1])>20:
-                        client_socket.send(('p%s\nServer: name %s is too long(>20)!\n'%(tstamp,temp[1])).encode())
-                    elif temp[1] in clients.keys():
-                        client_socket.send(('p%s\nServer: name %s already exists\n'%(tstamp,temp[1])).encode())
+                        client_socket.send(('p%s Server:\nname %s is too long(>20)!\n'%(tstamp,temp[1])).encode())
+                    elif temp[1] in names.values():
+                        client_socket.send(('p%s Server:\nname %s already exists\n'%(tstamp,temp[1])).encode())
                     else:
                         broadcast(client_socket,'%s %s:\nsetname -> %s\n'%(tstamp,name,temp[1]))
                         clients[temp[1]]=clients.pop(name)
@@ -73,7 +73,9 @@ def handle_client(client_socket,addr):
                         name=temp[1]
                 elif temp[0]=='tell':
                     if len(temp[1])>20 or temp[1] not in clients.keys():
-                        client_socket.send(('p%s\nServer: name %s doesn\'t exist\n'%(tstamp,temp[1])).encode())
+                        client_socket.send(('p%s Server:\nname %s doesn\'t exist\n'%(tstamp,temp[1])).encode())
+                    elif temp[1]==name:
+                        client_socket.send(('p%s Server:\ndon\'t whisper to yourself\n'%tstamp).encode())
                     else:
                         clients[temp[1]].send(('g%s(SILENT) %s ->\n%s'%(tstamp,name,temp[2])).encode())
                         client_socket.send(('g%s(SILENT) -> %s\n%s'%(tstamp,temp[1],temp[2])).encode())
