@@ -89,9 +89,9 @@ def handle_client(client_socket,addr):
             except:broadcast(client_socket,fullmsg)
         except:break
     try:
+        broadcast(client_socket,'%s\nClient disconnected: %s\n'%(getprest(),names[addr]))
         clients.pop(name)
         print('%s\nClient disconnected: %s\n'%(getprest(),names[addr]))
-        broadcast(client_socket,'%s\nClient disconnected: %s\n'%(getprest(),names[addr]))
     except:pass
     client_socket.close()
 def broadcast(client_socket,message):

@@ -11,8 +11,10 @@ class chat():
     def __init__(self):
         def addrecord(message,typen):
             self.record.config(state='normal')
-            self.record.insert('end',message,typen)
-            if sc1.get()[1]==1:self.record.see('end')
+            if sc1.get()[1]==1:
+                self.record.insert('end',message,typen)
+                self.record.see('end')
+            else:self.record.insert('end',message,typen)
             self.record.config(state='disabled')
         def clear():
             self.record.config(state='normal')
